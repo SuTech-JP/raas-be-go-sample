@@ -9,6 +9,7 @@ import (
 
 	"github.com/SuTech-JP/raas-client-go"
 	"github.com/gorilla/mux"
+    "github.com/rs/cors"
 )
 
 const KEY_APP = "RaaS-Application"
@@ -93,9 +94,9 @@ func main() {
 	})
 
 	//サーバの設定
-	http.Handle("/", r)
 	log.Println("Server starting on http://localhost:8080")
-	if err := http.ListenAndServe(":8080", nil); err != nil {
+    handler := cors.Default().Handler(r)
+	if err := http.ListenAndServe(":8080", handler); err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}
 }
