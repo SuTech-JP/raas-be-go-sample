@@ -80,7 +80,7 @@ func main() {
 		context, contextErr := raas.NewRaasUserContext("tenant", "sub")
 		if configErr == nil && contextErr == nil {
 			requestUrl := fmt.Sprintf("/report/layouts/%s/%s", application, schema)
-			//Get,Put,Post,DeleteのHTTPメソッドは、map[string]anyで返却されます
+			//Get,Put,Post,DeleteのHTTPメソッドは、[]map[string]anyで返却されます
 			resultMap, err := raas.RaaSRestClient(*config, *context).Get(requestUrl, nil)
 			if err == nil {
 				w.Header().Set("Content-Type", "application/json")
@@ -101,7 +101,7 @@ func main() {
 		context, contextErr := raas.NewRaasUserContext("tenant", "sub")
 		if configErr == nil && contextErr == nil {
 			requestUrl := fmt.Sprintf("/datatraveler/import/logs/%s", targetId)
-			//Get,Put,Post,DeleteのHTTPメソッドは、map[string]anyで返却されます
+			//Get,Put,Post,DeleteのHTTPメソッドは、[]map[string]anyで返却されます
 			resultMap, err := raas.RaaSRestClient(*config, *context).Get(requestUrl, nil)
 			if err == nil {
 				w.Header().Set("Content-Type", "application/json")
