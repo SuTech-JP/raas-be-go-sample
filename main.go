@@ -79,7 +79,7 @@ func main() {
 		config, configErr := raas.NewRaaSConnectConfig(os.Getenv(KEY_APP), os.Getenv(KEY_LND), os.Getenv(KEY_TKN))
 		context, contextErr := raas.NewRaasUserContext("tenant", "sub")
 		if configErr == nil && contextErr == nil {
-			requestUrl := fmt.Sprintf("/raas/report/layout/%s/%s", application, schema)
+			requestUrl := fmt.Sprintf("/report/layouts/%s/%s", application, schema)
 			//Get,Put,Post,DeleteのHTTPメソッドは、map[string]anyで返却されます
 			resultMap, err := raas.RaaSRestClient(*config, *context).Get(requestUrl, nil)
 			if err == nil {
@@ -100,7 +100,7 @@ func main() {
 		config, configErr := raas.NewRaaSConnectConfig(os.Getenv(KEY_APP), os.Getenv(KEY_LND), os.Getenv(KEY_TKN))
 		context, contextErr := raas.NewRaasUserContext("tenant", "sub")
 		if configErr == nil && contextErr == nil {
-			requestUrl := fmt.Sprintf("/raas/report/result/%s", targetId)
+			requestUrl := fmt.Sprintf("/datatraveler/import/logs/%s", targetId)
 			//Get,Put,Post,DeleteのHTTPメソッドは、map[string]anyで返却されます
 			resultMap, err := raas.RaaSRestClient(*config, *context).Get(requestUrl, nil)
 			if err == nil {
