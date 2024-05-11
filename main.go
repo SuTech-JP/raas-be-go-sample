@@ -9,9 +9,9 @@ import (
 	"os"
 
 	"github.com/SuTech-JP/raas-client-go"
+	"github.com/go-yaml/yaml"
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
-	"github.com/go-yaml/yaml"
 )
 
 type Arguments struct {
@@ -21,15 +21,14 @@ type Arguments struct {
 }
 
 type RaasConfig struct {
-    Application string `json:"application" yaml:"application"`
-    Landscape   string `json:"landscape" yaml:"landscape"`
-    Token   string `json:"token" yaml:"token"`
+	Application string `json:"application" yaml:"application"`
+	Landscape   string `json:"landscape" yaml:"landscape"`
+	Token       string `json:"token" yaml:"token"`
 }
 
 type AppConfig struct {
-    RaasConfig RaasConfig `json:"raasConfig" yaml:"raasConfig"`
+	RaasConfig RaasConfig `json:"raasConfig" yaml:"raasConfig"`
 }
-
 
 // ---------------
 // 実装サンプル：RaaSRestClientを用いたRaaSとの通信
@@ -71,14 +70,20 @@ func main() {
 		defer r.Body.Close()
 
 		// RaasのSession発行APIを実行
-		resultMap, err := raas.RaaSRestClient[any](*config, *context).CreateExternalSession(msa, args.BackUrl, args.SubUrl, args.SubDomain)
+		result, err := raas.RaaSRestClient(*config, *context).CreateExternalSession(msa, args.BackUrl, args.SubUrl, args.SubDomain)
 		if err != nil {
 			log.Fatalf("Errors: %v", err.Error())
 		}
 
+		// resultはバイト配列なので、APIドキュメントを参考に適切な形に変換する
+		var jsonObject map[string]any //キャストはご自由に
+		encodeError := json.Unmarshal(result, &jsonObject)
+		if encodeError != nil {
+			log.Fatalf("Cannot encode to JSON")
+		}
 		// JSONに変換してレスポンスに書き出し
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(resultMap)
+		json.NewEncoder(w).Encode(jsonObject)
 	})
 
 	// サンプル：レイアウト一覧の取得
@@ -96,14 +101,19 @@ func main() {
 
 		// レイアウト取得APIの実行
 		requestUrl := fmt.Sprintf("/report/layouts/%s/%s", application, schema)
-		resultMap, err := raas.RaaSRestClient[any](*config, *context).Get(requestUrl, nil)
+		result, err := raas.RaaSRestClient(*config, *context).Get(requestUrl, nil)
 		if err != nil {
 			log.Fatalf("Errors: %v", err.Error())
 		}
-
+		// resultはバイト配列なので、APIドキュメントを参考に適切な形に変換する
+		var jsonObject []map[string]any //キャストはご自由に
+		encodeError := json.Unmarshal(result, &jsonObject)
+		if encodeError != nil {
+			log.Fatalf("Cannot encode to JSON")
+		}
 		// JSONに変換してレスポンスに書き出し
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(resultMap)
+		json.NewEncoder(w).Encode(jsonObject)
 	})
 
 	// サンプル：CSVインポートにより作成されたログデータの取得
@@ -120,14 +130,20 @@ func main() {
 
 		// ログデータ取得APIを実行
 		requestUrl := fmt.Sprintf("/datatraveler/import/logs/%s", targetId)
-		resultMap, err := raas.RaaSRestClient[any](*config, *context).Get(requestUrl, nil)
+		result, err := raas.RaaSRestClient(*config, *context).Get(requestUrl, nil)
 		if err != nil {
 			log.Fatalf("Errors: %v", err.Error())
 		}
 
+		// resultはバイト配列なので、APIドキュメントを参考に適切な形に変換する
+		var jsonObject map[string]any //キャストはご自由に
+		encodeError := json.Unmarshal(result, &jsonObject)
+		if encodeError != nil {
+			log.Fatalf("Cannot encode to JSON")
+		}
 		// JSONに変換してレスポンスに書き出し
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(resultMap)
+		json.NewEncoder(w).Encode(jsonObject)
 	})
 
 	//サーバの設定
@@ -140,14 +156,14 @@ func main() {
 
 // application.yamlの読み込み
 func loadConfigForYaml() (*AppConfig, error) {
-    f, err := os.Open("application.yaml")
-    if err != nil {
-        log.Fatal("loadConfigForYaml os.Open err:", err)
-        return nil, err
-    }
-    defer f.Close()
+	f, err := os.Open("application.yaml")
+	if err != nil {
+		log.Fatal("loadConfigForYaml os.Open err:", err)
+		return nil, err
+	}
+	defer f.Close()
 
-    var cfg AppConfig
-    err = yaml.NewDecoder(f).Decode(&cfg)
-    return &cfg, err
+	var cfg AppConfig
+	err = yaml.NewDecoder(f).Decode(&cfg)
+	return &cfg, err
 }

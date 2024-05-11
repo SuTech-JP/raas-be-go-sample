@@ -3,10 +3,14 @@ module raas-sample
 go 1.22.2
 
 require (
-	github.com/SuTech-JP/raas-client-go v0.0.3-0.20240510055431-1078f9c16f97
+	github.com/SuTech-JP/raas-client-go v0.0.3-0.20240511175159-dddcfc7463e8
 	github.com/gorilla/mux v1.8.1
 )
 
 require github.com/rs/cors v1.11.0
 
-require github.com/go-yaml/yaml v2.1.0+incompatible // indirect
+require (
+	github.com/go-yaml/yaml v2.1.0+incompatible
+	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
+	gopkg.in/yaml.v2 v2.4.0 // indirect
+)
