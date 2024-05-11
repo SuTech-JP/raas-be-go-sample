@@ -11,11 +11,8 @@ import (
 	"github.com/SuTech-JP/raas-client-go"
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
+	"github.com/go-yaml/yaml"
 )
-
-const KEY_APP = "RaaS-Application"
-const KEY_LND = "RaaS-Landscape"
-const KEY_TKN = "RaaS-Token"
 
 type Arguments struct {
 	BackUrl   string
@@ -23,95 +20,114 @@ type Arguments struct {
 	SubDomain string
 }
 
+type RaasConfig struct {
+    Application string `json:"application" yaml:"application"`
+    Landscape   string `json:"landscape" yaml:"landscape"`
+    Token   string `json:"token" yaml:"token"`
+}
+
+type AppConfig struct {
+    RaasConfig RaasConfig `json:"raasConfig" yaml:"raasConfig"`
+}
+
+
 // ---------------
 // 実装サンプル：RaaSRestClientを用いたRaaSとの通信
 // ---------------
 func main() {
 	r := mux.NewRouter()
-	// 以下の３つは、環境変数からセットすることを推奨します。本サンプルでも環境変数から取得しています
-	// os.Setenv(KEY_APP, "アプリケーション名")
-	// os.Setenv(KEY_LND, "ランドスケープ名")
-	// os.Setenv(KEY_TKN, "付与されたトークン")
-	// １：ExternalSessionの確立
+
+	// 設定ファイルからRaasへの接続情報を取得
+	appConfig, appConfigError := loadConfigForYaml()
+	if appConfigError != nil {
+		log.Fatal("failed to load appConfig...", appConfigError)
+	}
+	config, configErr := raas.NewRaaSConnectConfig(appConfig.RaasConfig.Application, appConfig.RaasConfig.Landscape, appConfig.RaasConfig.Token)
+	if configErr != nil {
+		log.Fatal("Config is invalid...", configErr)
+	}
+
+	// サンプル：Sessionの発行
 	r.HandleFunc("/raas/{msa}/session", func(w http.ResponseWriter, r *http.Request) {
+		// RaasUserContextの作成
+		context, contextErr := raas.NewRaasUserContext("tenant", "sub")
+		if contextErr != nil {
+			log.Fatal("Context is invalid...")
+		}
+
+		// 引数を準備
 		vars := mux.Vars(r)
 		msa := vars["msa"]
-		config, configErr := raas.NewRaaSConnectConfig(os.Getenv(KEY_APP), os.Getenv(KEY_LND), os.Getenv(KEY_TKN))
-		context, contextErr := raas.NewRaasUserContext("tenant", "sub")
-		if configErr == nil && contextErr == nil {
-			//bodyから値を取得
-			body, err := io.ReadAll(r.Body)
-			if err != nil {
-				http.Error(w, "Error reading request body", http.StatusInternalServerError)
-				return
-			}
-			//ここではArgumentsにマッピング
-			var args Arguments
-			if err := json.Unmarshal(body, &args); err != nil {
-				http.Error(w, "Error parsing JSON data", http.StatusInternalServerError)
-				return
-			}
-			defer r.Body.Close()
-			//引数
-			backUrl := args.BackUrl
-			subUrl := args.SubUrl
-			subDomain := args.SubDomain
-			//msaは、"report" か　"datatraveler"
-			//resultMapはmap[string]anyで返却されます
-			resultMap, err := raas.RaaSRestClient[map[string]any](*config, *context).CreateExternalSession(msa, backUrl, subUrl, subDomain)
-			if err == nil {
-				//JSONに変換して書き出し
-				w.Header().Set("Content-Type", "application/json")
-				json.NewEncoder(w).Encode(resultMap)
-			} else {
-				log.Fatalf("Errors: %v", err.Error())
-			}
-		} else {
-			log.Fatal("Config or Context is invalid...")
+		body, err := io.ReadAll(r.Body)
+		if err != nil {
+			http.Error(w, "Error reading request body", http.StatusInternalServerError)
+			return
 		}
+		var args Arguments
+		if err := json.Unmarshal(body, &args); err != nil {
+			http.Error(w, "Error parsing JSON data", http.StatusInternalServerError)
+			return
+		}
+		defer r.Body.Close()
+
+		// RaasのSession発行APIを実行
+		resultMap, err := raas.RaaSRestClient[any](*config, *context).CreateExternalSession(msa, args.BackUrl, args.SubUrl, args.SubDomain)
+		if err != nil {
+			log.Fatalf("Errors: %v", err.Error())
+		}
+
+		// JSONに変換してレスポンスに書き出し
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(resultMap)
 	})
 
-	//GETの送信例１
+	// サンプル：レイアウト一覧の取得
 	r.HandleFunc("/raas/report/layout/{application}/{schema}", func(w http.ResponseWriter, r *http.Request) {
+		// RaasUserContextの作成
+		context, contextErr := raas.NewRaasUserContext("tenant", "sub")
+		if contextErr != nil {
+			log.Fatal("Context is invalid...")
+		}
+
+		// 引数を準備
 		vars := mux.Vars(r)
 		application := vars["application"]
 		schema := vars["schema"]
-		config, configErr := raas.NewRaaSConnectConfig(os.Getenv(KEY_APP), os.Getenv(KEY_LND), os.Getenv(KEY_TKN))
-		context, contextErr := raas.NewRaasUserContext("tenant", "sub")
-		if configErr == nil && contextErr == nil {
-			requestUrl := fmt.Sprintf("/report/layouts/%s/%s", application, schema)
-			//Get,Put,Post,DeleteのHTTPメソッドは、map[string]anyで返却されます
-			resultMap, err := raas.RaaSRestClient[[]map[string]any](*config, *context).Get(requestUrl, nil)
-			if err == nil {
-				w.Header().Set("Content-Type", "application/json")
-				json.NewEncoder(w).Encode(resultMap)
-			} else {
-				log.Fatalf("Errors: %v", err.Error())
-			}
-		} else {
-			log.Fatal("Config or Context is invalid...")
+
+		// レイアウト取得APIの実行
+		requestUrl := fmt.Sprintf("/report/layouts/%s/%s", application, schema)
+		resultMap, err := raas.RaaSRestClient[any](*config, *context).Get(requestUrl, nil)
+		if err != nil {
+			log.Fatalf("Errors: %v", err.Error())
 		}
+
+		// JSONに変換してレスポンスに書き出し
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(resultMap)
 	})
 
-	//GETの送信例２
+	// サンプル：CSVインポートにより作成されたログデータの取得
 	r.HandleFunc("/raas/report/result/{targetId}", func(w http.ResponseWriter, r *http.Request) {
-		vars := mux.Vars(r)
-		targetId := vars["targetId"]
-		config, configErr := raas.NewRaaSConnectConfig(os.Getenv(KEY_APP), os.Getenv(KEY_LND), os.Getenv(KEY_TKN))
+		// RaasUserContextの作成
 		context, contextErr := raas.NewRaasUserContext("tenant", "sub")
-		if configErr == nil && contextErr == nil {
-			requestUrl := fmt.Sprintf("/datatraveler/import/logs/%s", targetId)
-			//Get,Put,Post,DeleteのHTTPメソッドは、map[string]anyで返却されます
-			resultMap, err := raas.RaaSRestClient[map[string]any](*config, *context).Get(requestUrl, nil)
-			if err == nil {
-				w.Header().Set("Content-Type", "application/json")
-				json.NewEncoder(w).Encode(resultMap)
-			} else {
-				log.Fatalf("Errors: %v", err.Error())
-			}
-		} else {
+		if contextErr != nil {
 			log.Fatal("Config or Context is invalid...")
 		}
+
+		// 引数を準備
+		vars := mux.Vars(r)
+		targetId := vars["targetId"]
+
+		// ログデータ取得APIを実行
+		requestUrl := fmt.Sprintf("/datatraveler/import/logs/%s", targetId)
+		resultMap, err := raas.RaaSRestClient[any](*config, *context).Get(requestUrl, nil)
+		if err != nil {
+			log.Fatalf("Errors: %v", err.Error())
+		}
+
+		// JSONに変換してレスポンスに書き出し
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(resultMap)
 	})
 
 	//サーバの設定
@@ -120,4 +136,18 @@ func main() {
 	if err := http.ListenAndServe(":8080", handler); err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}
+}
+
+// application.yamlの読み込み
+func loadConfigForYaml() (*AppConfig, error) {
+    f, err := os.Open("application.yaml")
+    if err != nil {
+        log.Fatal("loadConfigForYaml os.Open err:", err)
+        return nil, err
+    }
+    defer f.Close()
+
+    var cfg AppConfig
+    err = yaml.NewDecoder(f).Decode(&cfg)
+    return &cfg, err
 }
