@@ -30,6 +30,19 @@ type AppConfig struct {
 	RaasConfig RaasConfig `json:"raasConfig" yaml:"raasConfig"`
 }
 
+
+type DataImportLog struct {
+	Id string `json:"id"`
+	Status string `json:"status"`
+	Details []DataImportLogDetail `json:"details"`
+}
+
+type DataImportLogDetail struct {
+	DataId string `json:"dataId"`
+	PdfUrl string `json:"pdfUrl"`
+	Entity any `json:"entity"`
+}
+
 // ---------------
 // 実装サンプル：RaaSRestClientを用いたRaaSとの通信
 // ---------------
@@ -136,14 +149,32 @@ func main() {
 		}
 
 		// resultはバイト配列なので、APIドキュメントを参考に適切な形に変換する
-		var jsonObject map[string]any //キャストはご自由に
-		encodeError := json.Unmarshal(result, &jsonObject)
+		var dataImportLog DataImportLog
+		encodeError := json.Unmarshal(result, &dataImportLog)
 		if encodeError != nil {
 			log.Fatalf("Cannot encode to JSON")
 		}
+
+		if dataImportLog.Status == "FINISH" {
+			// ログデータ詳細取得APIを実行
+			requestUrl := fmt.Sprintf("/datatraveler/import/logs/%s/data", targetId)
+			result, err := raas.RaaSRestClient(*config, *context).Get(requestUrl, nil)
+			if err != nil {
+				log.Fatalf("Errors: %v", err.Error())
+			}
+
+			// resultはバイト配列なので、APIドキュメントを参考に適切な形に変換する
+			var dataImportLogDetails []DataImportLogDetail
+			encodeError := json.Unmarshal(result, &dataImportLogDetails)
+			if encodeError != nil {
+				log.Fatalf("Cannot encode to JSON")
+			}
+			dataImportLog.Details = dataImportLogDetails
+		}
+
 		// JSONに変換してレスポンスに書き出し
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(jsonObject)
+		json.NewEncoder(w).Encode(dataImportLog)
 	})
 
 	//サーバの設定
