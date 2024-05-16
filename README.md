@@ -10,7 +10,6 @@ SuTech社提供のraas-client-goをGitHub.Packageから取得出来るように�
 ```
 export RAAS_GITHUB_USERNAME=XXXXXXX
 export RAAS_GITHUB_TOKEN=XXXXXXX
-export GOPRIVATE="github.com/SuTech-JP/raas-client-go"
 ```
 
 ### 1.2 SuTech社のGitHub.Packageリポジトリに、提供されたtokenでアクセスするための設定を行う
