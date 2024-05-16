@@ -1,5 +1,7 @@
 github.com/SuTech-JP/raas-client-go v0.0.3-0.20240511175159-dddcfc7463e8 h1:u4KUxlFWZ8kbe2MndlEzhz+9Q6G3DkIOKTdtb7ASWD4=
 github.com/SuTech-JP/raas-client-go v0.0.3-0.20240511175159-dddcfc7463e8/go.mod h1:jRhHZ5SgV7OCNKcYglgdAxo5JA/UUO8WBl4D/fzJ1LI=
+github.com/SuTech-JP/raas-client-go v1.0.0 h1:nK9JE8u4PoY2j4i4OuEXM1AMlNVVrMpIbuCtPKBRCrc=
+github.com/SuTech-JP/raas-client-go v1.0.0/go.mod h1:jRhHZ5SgV7OCNKcYglgdAxo5JA/UUO8WBl4D/fzJ1LI=
 github.com/go-yaml/yaml v2.1.0+incompatible h1:RYi2hDdss1u4YE7GwixGzWwVo47T8UQwnTLB6vQiq+o=
 github.com/go-yaml/yaml v2.1.0+incompatible/go.mod h1:w2MrLa16VYP0jy6N7M5kHaCkaLENm+P+Tv+MfurjSw0=
 github.com/gorilla/mux v1.8.1 h1:TuBL49tXwgrFYWhqrNgrUNEY92u81SPhu7sTdzQEiWY=
