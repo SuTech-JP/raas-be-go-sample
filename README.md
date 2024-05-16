@@ -3,19 +3,25 @@
 Go向けBackendソースのサンプルです
 
 ## 1.起動方法
-### 1.1 プライベート・レポジトリへのアクセスを許可する環境変数の設定
 
-SuTech社提供のraas-client-goはSuTech社のプライベート・レポジトリに格納されています。
+### 1.1 githubのuser/tokenを環境変数に登録する
+SuTech社提供のraas-client-goをGitHub.Packageから取得出来るようにする
+(SuTech社による権限付与が必要)
+```
+export RAAS_GITHUB_USERNAME=XXXXXXX
+export RAAS_GITHUB_TOKEN=XXXXXXX
+export GOPRIVATE="github.com/SuTech-JP/raas-client-go"
+```
 
-取得に際し、環境変数の設定が必要です。環境変数は以下の通りです。
-Linux環境下でのコマンドになっていますので、Windowsの場合は読み替えてください。
-`export GOPRIVATE="github.com/SuTech-JP/raas-client-go"`
+### 1.2 SuTech社のGitHub.Packageリポジトリに、提供されたtokenでアクセスするための設定を行う
+```
+git config --global url."https://${RAAS_GITHUB_USERNAME}:${RAAS_GITHUB_TOKEN}@github.com/SuTech-JP".insteadOf "https://github.com/SuTech-JP"
+```
 
 ### 1.2 ビルド
+依存ライブラリの取得のため、以下のコマンドを実行します
 
-依存関係の解決のために、以下のコマンドを実行します
-
-`go build`
+`go install`
 
 ### 1.3 application.yamlを準備する
 （SuTech社より取得した値をXXXX部分に記載）
