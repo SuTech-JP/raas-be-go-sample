@@ -177,6 +177,21 @@ func main() {
 		json.NewEncoder(w).Encode(dataImportLog)
 	})
 
+	// サンプル：テナント削除
+	r.HandleFunc("/raas/tenant/delete", func(w http.ResponseWriter, r *http.Request) {
+		// RaasUserContextの作成
+		context, contextErr := raas.NewRaasUserContext("tenant", "dummy")
+		if contextErr != nil {
+			log.Fatal("Context is invalid...")
+		}
+
+		// Raasのテナント削除APIを実行
+		err := raas.RaaSRestClient(*config, *context).DeleteTenant("tenant")
+		if err != nil {
+			log.Fatalf("Errors: %v", err.Error())
+		}
+	})
+
 	//サーバの設定
 	log.Println("Server starting on http://localhost:8080")
 	handler := cors.Default().Handler(r)
