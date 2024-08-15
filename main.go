@@ -62,7 +62,7 @@ func main() {
 	// サンプル：Sessionの発行
 	r.HandleFunc("/raas/{msa}/session", func(w http.ResponseWriter, r *http.Request) {
 		// RaasUserContextの作成
-		context, contextErr := raas.NewRaasUserContext("tenant", "sub")
+		context, contextErr := raas.NewRaasUserContext("tenant", "sub", nil)
 		if contextErr != nil {
 			log.Fatal("Context is invalid...")
 		}
@@ -102,7 +102,7 @@ func main() {
 	// サンプル：レイアウト一覧の取得
 	r.HandleFunc("/raas/report/layout/{application}/{schema}", func(w http.ResponseWriter, r *http.Request) {
 		// RaasUserContextの作成
-		context, contextErr := raas.NewRaasUserContext("tenant", "sub")
+		context, contextErr := raas.NewRaasUserContext("tenant", "sub", nil)
 		if contextErr != nil {
 			log.Fatal("Context is invalid...")
 		}
@@ -132,7 +132,7 @@ func main() {
 	// サンプル：CSVインポートにより作成されたログデータの取得
 	r.HandleFunc("/raas/report/result/{targetId}", func(w http.ResponseWriter, r *http.Request) {
 		// RaasUserContextの作成
-		context, contextErr := raas.NewRaasUserContext("tenant", "sub")
+		context, contextErr := raas.NewRaasUserContext("tenant", "sub", nil)
 		if contextErr != nil {
 			log.Fatal("Config or Context is invalid...")
 		}
@@ -180,7 +180,7 @@ func main() {
 	// サンプル：テナント削除
 	r.HandleFunc("/raas/tenant/delete", func(w http.ResponseWriter, r *http.Request) {
 		// RaasUserContextの作成
-		context, contextErr := raas.NewRaasUserContext("tenant", "dummy")
+		context, contextErr := raas.NewRaasUserContext("tenant", "dummy", nil)
 		if contextErr != nil {
 			log.Fatal("Context is invalid...")
 		}

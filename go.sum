@@ -14,6 +14,10 @@ github.com/SuTech-JP/raas-client-go v1.0.2 h1:ZT62v0fn0AEzJJg6LYU+mSbBqwUVhxQGAY
 github.com/SuTech-JP/raas-client-go v1.0.2/go.mod h1:jRhHZ5SgV7OCNKcYglgdAxo5JA/UUO8WBl4D/fzJ1LI=
 github.com/SuTech-JP/raas-client-go v1.0.3 h1:F2xztahS+7MaGn2Nhv+qBf1f+63gAQ9ySTJgMSrPehc=
 github.com/SuTech-JP/raas-client-go v1.0.3/go.mod h1:jRhHZ5SgV7OCNKcYglgdAxo5JA/UUO8WBl4D/fzJ1LI=
+github.com/SuTech-JP/raas-client-go v1.0.4-0.20240723103325-16e6f19857f5 h1:Jw2p5+A5DAPogif/z3njgzKBuHUADL/aFCVSAD7HeGw=
+github.com/SuTech-JP/raas-client-go v1.0.4-0.20240723103325-16e6f19857f5/go.mod h1:jRhHZ5SgV7OCNKcYglgdAxo5JA/UUO8WBl4D/fzJ1LI=
+github.com/SuTech-JP/raas-client-go v1.0.4 h1:jK6u2Kxz1EPHNpIaJrsxhtlhTdsPxgkf+CTjuQ4voPQ=
+github.com/SuTech-JP/raas-client-go v1.0.4/go.mod h1:jRhHZ5SgV7OCNKcYglgdAxo5JA/UUO8WBl4D/fzJ1LI=
 github.com/go-yaml/yaml v2.1.0+incompatible h1:RYi2hDdss1u4YE7GwixGzWwVo47T8UQwnTLB6vQiq+o=
 github.com/go-yaml/yaml v2.1.0+incompatible/go.mod h1:w2MrLa16VYP0jy6N7M5kHaCkaLENm+P+Tv+MfurjSw0=
 github.com/gorilla/mux v1.8.1 h1:TuBL49tXwgrFYWhqrNgrUNEY92u81SPhu7sTdzQEiWY=
