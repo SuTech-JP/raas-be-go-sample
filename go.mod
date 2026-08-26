@@ -3,7 +3,7 @@ module raas-sample
 go 1.22.2
 
 require (
-	github.com/SuTech-JP/raas-client-go v1.0.7
+	github.com/SuTech-JP/raas-client-go v1.0.8
 	github.com/gorilla/mux v1.8.1
 )
 
