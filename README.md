@@ -4,23 +4,57 @@ Go向けBackendソースのサンプルです
 
 ## 1.起動方法
 
-### 1.1 githubのuser/tokenを環境変数に登録する
-SuTech社提供のraas-client-goをGitHub.Packageから取得出来るようにする
-(SuTech社による権限付与が必要)
+### 1.1 raas-client-goを取得できるようにする
+SuTech社提供のraas-client-goは、GitHubのprivateリポジトリ（`github.com/SuTech-JP/raas-client-go`）にあります。
+SuTech社に登録したdeploy key（このリポジトリ専用の、読み取り専用のSSH鍵）を使って取得します。
+
+#### 1.1.1 SSH鍵を作成し、公開鍵をSuTech社へ送る
 ```
-export RAAS_GITHUB_USERNAME=XXXXXXX
-export RAAS_GITHUB_TOKEN=XXXXXXX
+ssh-keygen -t ed25519 -f ~/.ssh/raas-client-go -C "raas-client-go deploy key"
+```
+- SuTech社へは**公開鍵（`~/.ssh/raas-client-go.pub`）だけ**を送ってください。秘密鍵は送らず、社外に出さないでください
+- SuTech社が読み取り専用で登録し、完了をご連絡します。連絡を受けてから次の手順へ進んでください
+- 開発用とCI用など、用途ごとに鍵を分けることもできます。その場合はそれぞれの公開鍵を送ってください
+- 1つの鍵を他のGitHubリポジトリと共用することはできません（GitHubの制約です）
+- 鍵が不要になった場合や、漏えいの疑いがある場合はSuTech社へご連絡ください。登録を削除します
+
+#### 1.1.2 SSHの接続先を設定する
+`~/.ssh/config` に次を追加します。他のGitHubの利用と鍵が混ざらないよう、専用のホスト名（`github-raas-client-go`）を使います。
+```
+Host github-raas-client-go
+    HostName github.com
+    User git
+    IdentityFile ~/.ssh/raas-client-go
+    IdentitiesOnly yes
 ```
 
-### 1.2 SuTech社のGitHub.Packageリポジトリに、提供されたuser/tokenでアクセスするための設定を行う
+接続を確認します。`SuTech-JP/raas-client-go` への認証に成功した旨が表示されれば設定できています。
 ```
-git config --global url."https://${RAAS_GITHUB_USERNAME}:${RAAS_GITHUB_TOKEN}@github.com/SuTech-JP".insteadOf "https://github.com/SuTech-JP"
+ssh -T git@github-raas-client-go
 ```
+
+#### 1.1.3 GitとGoを設定する
+```
+git config --global url."ssh://git@github-raas-client-go/SuTech-JP/raas-client-go".insteadOf "https://github.com/SuTech-JP/raas-client-go"
+go env -w GOPRIVATE=github.com/SuTech-JP/raas-client-go
+```
+- `insteadOf` は、置き換えの対象をraas-client-goのリポジトリまでに絞ってください。`https://github.com/SuTech-JP` 全体を置き換えると、この鍵で読めない他のリポジトリにも鍵が使われます
+- `GOPRIVATE` を設定しないと、Goは公開のプロキシ（proxy.golang.org）とチェックサムのデータベース（sum.golang.org）に問い合わせて取得に失敗します
+
+#### 1.1.4 CIで取得する場合
+- 秘密鍵はCIのsecretに登録し、ジョブの中で一時ファイルに書き出して権限を`600`にしてください
+- 1.1.2と1.1.3の設定はジョブの中で行い、共有のランナーのglobal設定を書き換えないでください
+- GitHubのホスト鍵は、[GitHubが公開しているフィンガープリント](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/githubs-ssh-key-fingerprints)と照合してから`known_hosts`に登録してください。`StrictHostKeyChecking=no` は使わないでください
 
 ### 1.2 ビルド
-依存ライブラリの取得のため、以下のコマンドを実行します
-
-`go install`
+依存ライブラリを取得・検証してからビルドします。
+```
+go mod download
+go mod verify
+go build ./...
+```
+- raas-client-goのバージョンは `go get github.com/SuTech-JP/raas-client-go@v1.0.8` のように明示して更新してください（`@latest` 任せにしない）
+- `go.mod` と `go.sum` はリポジトリにコミットしてください。privateなモジュールは公開のチェックサムのデータベースで検証されないため、`go.sum` が取得物の改ざんを検出する唯一の手段になります
 
 ### 1.3 application.yamlを準備する
 （SuTech社より取得した値をXXXX部分に記載）
